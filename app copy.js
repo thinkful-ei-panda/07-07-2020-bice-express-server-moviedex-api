@@ -2,50 +2,14 @@ const express = require ( 'express' )
 
 const morgan = require ( 'morgan' )
 
-//const cors = require ( 'cors' )
-
 const app = express ()
 
 app.use ( morgan ( 'dev' ) )
 
-app.use ( morgan ( 'common' ) )
-
-//app.use ( cors () )
+const apps = require ( './playstore' )
 
 // is this correct?
 //require ('dotenv').config()
-
-// Pipeline stuff
-app.get()
-app.use()
-
-function requireAuth ( req, res, next ) {
-
-    const authVal = req.get ( 'Authorization' ) || ''
-
-}
-
-// Verify bearer token exists
-if ( !authVal.startsWith ( 'Bearer' ) ) {
-
-    return res.status ( 401 ).json ( { error: 'Missing bearer token' } )
-
-}
-
-// Val;idate token is correct
-const token = authVal.split ( '' )[ 1 ]
-if ( token !== process.env.API_TOKEN ) {
-
-    return res.status ( 401 ).json ( { error: 'Invalid credentials' } )
-
-}
-
-function handleTypes ( req, res ) {
-
-    res.json{ [ 'Bug','Dark','Test' ] }
-
-}
-
 
 app.get ( '/apps', ( req, res ) => {
 

@@ -5,12 +5,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app",  
-    "dev": "nodemon app" 
+    "start": "node app",
+    "dev": "nodemon app"
   },
   "author": "Matt & Bice",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "debug": "^4.1.1",
     "express": "^4.17.1",
     "morgan": "^1.10.0",
