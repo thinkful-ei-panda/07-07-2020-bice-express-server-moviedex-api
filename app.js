@@ -2,108 +2,118 @@ const express = require ( 'express' )
 
 const morgan = require ( 'morgan' )
 
-//const cors = require ( 'cors' )
-
 const app = express ()
+
+const cors = require ( 'cors' )
+
+const helmet = require ( 'helmet' )
+
+require ( 'dotenv' ).config ()
 
 app.use ( morgan ( 'dev' ) )
 
 app.use ( morgan ( 'common' ) )
 
-//app.use ( cors () )
+app.use ( helmet () )
 
-// is this correct?
-//require ('dotenv').config()
+app.use ( cors () )
 
-// Pipeline stuff
-app.get()
-app.use()
 
-function requireAuth ( req, res, next ) {
+const movies = require ( './movies-data-small.json' )
 
-    const authVal = req.get ( 'Authorization' ) || ''
+app.use ( function validateBearerToken ( req, res, next ) {
+	
+	const authToken = req.get('Authorization')
+	const apiToken = process.env.API_TOKEN
+
+	if ( !authToken || authToken.split(' ')[1] !== apiToken ) {
+	
+		return res.status ( 401 ).json ( { error: 'Unauthorized request' } )
+	
+	}
+
+	next ()
+
+})
+
+function handleGetMovieList ( req, res ) {
+	const { sort = '' } = req.query
+		
+	const { genre = '' } = req.query
+	
+	let genreVal = genre.toString ()
+	let genres = movies.map ( movie => movie.genre.toLocaleLowerCase ().toString () )
+	genres = new Set ( genres )
+	genres = [ ...genres ]
+
+	const { country = '' } = req.query
+
+	let countryVal = country.toString ()
+	let countries = movies.map ( movie => movie.country.toLocaleLowerCase ().toString () )
+	countries = new Set ( countries )
+	countries = [ ...countries ]
+
+	const { avg_vote = '' } = req.query
+	
+	let movieList = [ ...movies ]
+
+	if ( genre && !( genres.includes ( genreVal ) ) ) {
+
+		res.status ( 400 ).send ( `${ genre } is invalid` )
+
+	}
+	
+	if ( genre ) {
+		
+		newMovieList = movieList.filter ( item => {
+			
+			if ( item.genre.toLowerCase () === genreVal ) return item 
+		
+		} )
+
+		res.json ( newMovieList )
+
+	}
+	
+	if ( country && !( countries.includes ( countryVal ) ) ) {
+
+		res.status ( 400 ).send ( `${ country } is invalid` )
+
+	}
+	
+		if ( country ) {
+		
+		newCountryList = movieList.filter ( item => {
+			
+			if ( item.country.toLowerCase () === countryVal ) return item 
+		
+			} )
+
+		res.json ( newCountryList )
+
+	}
+	
+	if ( avg_vote && Number.isNaN ( avg_vote ) ) {
+
+		res.status ( 400 ).send ( `${ avg_vote } is not a number` )
+
+	}
+		
+	if ( avg_vote ) {
+
+		movieList = movieList.filter ( item => {
+			
+			if ( item.avg_vote >= avg_vote ) return item 
+		
+			} )
+
+	}
+
+   res.json ( movieList )
 
 }
 
-// Verify bearer token exists
-if ( !authVal.startsWith ( 'Bearer' ) ) {
-
-    return res.status ( 401 ).json ( { error: 'Missing bearer token' } )
-
-}
-
-// Val;idate token is correct
-const token = authVal.split ( '' )[ 1 ]
-if ( token !== process.env.API_TOKEN ) {
-
-    return res.status ( 401 ).json ( { error: 'Invalid credentials' } )
-
-}
-
-function handleTypes ( req, res ) {
-
-    res.json{ [ 'Bug','Dark','Test' ] }
-
-}
-
-
-app.get ( '/apps', ( req, res ) => {
-
-    const { sort = '' } = req.query
-    
-    const { genre = '' } = req.query
-    
-    let appList = [ ...apps ]
-
-    const genres = [ 'card', 'strategy', 'puzzle', 'action', 'adventure', 'casual', 'arcade', ]
-    
-    const sortToLowerCase = sort.toLowerCase ()
-    
-    if ( sort && sortToLowerCase !== 'rating' && sortToLowerCase !== 'app' ) {
-
-        return res.status ( 400 ).json ( { error: 'Sort must be one of "app" or "rating"' } )
-    
-    }
-    
-    if ( genre && !( genres.includes ( genre.toLowerCase () ) ) ) {
-
-        res.status ( 400 ).send ( `${ genre } is invalid` )
-
-    }
-
-    else {
-
-        appList = apps.filter ( app => {
-
-            return app.Genres.toLowerCase ().includes ( genre.toLowerCase () )
-
-        } )
-
-    }
-
-    if ( sortToLowerCase === 'rating') {
-        // Highest to lowest
-        appList.sort ( ( a,b ) => { 
-            
-            return b.Rating - a.Rating 
-        
-        } )
-
-    }
-
-    if ( sortToLowerCase === 'app') {
-        
-        appList.sort ( ( a,b ) => { 
-            
-            return b.Rating - a.Rating 
-        
-        } )
-
-    }
-
-    res.json ( appList )
-
-} )
+app.get ( '/movie', handleGetMovieList )
 
 app.listen ( 8000, () => {
 

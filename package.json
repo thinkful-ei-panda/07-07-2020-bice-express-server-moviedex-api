@@ -1,5 +1,5 @@
 {
-  "name": "07-06-2020-bice-intro-to-node-and-npm",
+  "name": "07-07-2020-bice-express-server-moviedex-api",
   "version": "1.0.0",
   "description": "Intro to node and npm",
   "main": "index.js",
@@ -13,7 +13,9 @@
   "dependencies": {
     "cors": "^2.8.5",
     "debug": "^4.1.1",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "helmet": "^3.23.3",
     "morgan": "^1.10.0",
     "nodemon": "^2.0.4"
   }
