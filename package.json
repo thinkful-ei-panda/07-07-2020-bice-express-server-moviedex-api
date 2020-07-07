@@ -1,0 +1,19 @@
+{
+  "name": "07-06-2020-bice-intro-to-node-and-npm",
+  "version": "1.0.0",
+  "description": "Intro to node and npm",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app",  
+    "dev": "nodemon app" 
+  },
+  "author": "Matt & Bice",
+  "license": "ISC",
+  "dependencies": {
+    "debug": "^4.1.1",
+    "express": "^4.17.1",
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.4"
+  }
+}
