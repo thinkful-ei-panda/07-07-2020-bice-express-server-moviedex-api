@@ -18,7 +18,6 @@ app.use ( helmet () )
 
 app.use ( cors () )
 
-
 const movies = require ( './movies-data-small.json' )
 
 app.use ( function validateBearerToken ( req, res, next ) {
@@ -41,22 +40,22 @@ function handleGetMovieList ( req, res ) {
 		
 	const { genre = '' } = req.query
 	
-	let genreVal = genre.toString ()
-	let genres = movies.map ( movie => movie.genre.toLocaleLowerCase ().toString () )
+	let genreVal = genre.toString ().toLowerCase ()
+	let genres = movies.map ( movie => movie.genre.toLowerCase ().toString () )
 	genres = new Set ( genres )
 	genres = [ ...genres ]
 
 	const { country = '' } = req.query
 
-	let countryVal = country.toString ()
-	let countries = movies.map ( movie => movie.country.toLocaleLowerCase ().toString () )
+	let countryVal = country.toString ().toLowerCase ()
+	let countries = movies.map ( movie => movie.country.toLowerCase ().toString () )
 	countries = new Set ( countries )
 	countries = [ ...countries ]
 
 	const { avg_vote = '' } = req.query
 	
-	let movieList = [ ...movies ]
-
+	let movieList = movies
+	
 	if ( genre && !( genres.includes ( genreVal ) ) ) {
 
 		res.status ( 400 ).send ( `${ genre } is invalid` )
@@ -65,13 +64,13 @@ function handleGetMovieList ( req, res ) {
 	
 	if ( genre ) {
 		
-		newMovieList = movieList.filter ( item => {
+		movieList = movieList.filter ( item => {
 			
 			if ( item.genre.toLowerCase () === genreVal ) return item 
 		
 		} )
 
-		res.json ( newMovieList )
+		res.json ( movieList )
 
 	}
 	
@@ -81,15 +80,15 @@ function handleGetMovieList ( req, res ) {
 
 	}
 	
-		if ( country ) {
+	if ( country ) {
 		
-		newCountryList = movieList.filter ( item => {
+			movieList = movieList.filter ( item => {
 			
 			if ( item.country.toLowerCase () === countryVal ) return item 
 		
 			} )
 
-		res.json ( newCountryList )
+		res.json ( movieList )
 
 	}
 	
@@ -103,7 +102,7 @@ function handleGetMovieList ( req, res ) {
 
 		movieList = movieList.filter ( item => {
 			
-			if ( item.avg_vote >= avg_vote ) return item 
+			if ( item.avg_vote >= Number(avg_vote) ) return item 
 		
 			} )
 
