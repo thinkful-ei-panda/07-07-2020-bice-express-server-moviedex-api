@@ -1,74 +1,51 @@
-const express = require( 'express' )
-const morgan = require( 'morgan' )
-const app = express()
-const cors = require( 'cors' )
-const helmet = require( 'helmet' )
-require( 'dotenv' ).config()
-app.use( morgan ( 'dev' ) )
-app.use( morgan ( 'common' ) )
-app.use( helmet () )
-app.use( cors () )
+require('dotenv').config();
+const express = require('express');
+const morgan = require('morgan');
+const cors = require('cors');
+const helmet = require('helmet');
+const MOVIES = require('./movies-data-small.json');
 
-const movies = require( './movies-data-small.json' )
+const app = express();
 
-app.use ( function validateBearerToken( req, res, next ) {
-	
-	const authToken = req.get('Authorization')
-	const apiToken = process.env.API_TOKEN
+app.use(morgan('dev'));
+app.use(cors());
+app.use(helmet());
 
-	if ( !authToken || authToken.split(' ')[1] !== apiToken ) {
-		return res.status ( 401 ).json( { error: 'Unauthorized request' } )
-	}
+app.use(function validateBearerToken(req, res, next) {
+  const apiToken = process.env.API_TOKEN;
+  const authToken = req.get('Authorization');
+  if (!authToken || authToken.split(' ')[1] !== apiToken) {
+    return res.status(401).json({ error: 'Unauthorized request' });
+  }
+  next();
+});
 
-	next ()
+app.get('/movie', function handleGetMovie(req, res) {
+  let response = MOVIES;
 
-})
+  if (req.query.genre) {
+    response = response.filter(movie =>
+      movie.genre.toLowerCase().includes(req.query.genre.toLowerCase())
+    );
+  }
 
-function handleGetMovieList( req, res ) {
-	const { sort = '' } = req.query
-		
-	const { genre = '' } = req.query
-	
-	// Create a list of genres to check against
-	let genreList = movies.map( movie => movie.genre.toLowerCase().toString() )
-	genreList = new Set ( genreList )
-	genreList = [ ...genreList ]
+  if (req.query.country) {
+    response = response.filter(movie =>
+      movie.country.toLowerCase().includes(req.query.country.toLowerCase())
+    );
+  }
 
-	const { country = '' } = req.query
+  if (req.query.avg_vote) {
+    response = response.filter(movie =>
+      Number(movie.avg_vote) >= Number(req.query.avg_vote)
+    );
+  }
 
-	// Create a list of countries to check against
-	let countryList = movies.map ( movie => movie.country.toLowerCase().toString() )
-	countryList = new Set ( countryList )
-	countryList = [ ...countryList ]
+  res.json(response);
+});
 
-	const { avg_vote = '' } = req.query
-	
-	let movieList = movies
-	
-	if ( genre ) {
-		if ( genreList.some( item => item.includes( genre ) === true ) ) {
-			return res.json ( movies.filter( movie => { return movie.genre.toString().toLowerCase().includes( genre.toString().toLowerCase() ) } ) )
-		}
-		else return res.status ( 400 ).send ( `${ genre } is invalid` )
-	}
-	
-	if ( country ) {
-		if ( countryList.some( item => item.includes( country ) === true ) ) {
-			return res.json ( movies.filter( movie => { return movie.country.toString().toLowerCase().includes( country.toString().toLowerCase() ) } ) )
-		}
-		else return res.status ( 400 ).send ( `${ country } is invalid` )
-	}
+const PORT = 8000;
 
-	if ( avg_vote && Number.isNaN( avg_vote ) ) res.status( 400 ).send( `${ avg_vote } is not a number` )
-		
-	if ( avg_vote ) movieList = movieList.filter( item => { return item.avg_vote >= Number(avg_vote) } ) 
-
-   	else return res.json( movieList )
-
-}
-
-app.get( '/movie', handleGetMovieList )
-
-app.listen( 8000, () => {
-	console.log( 'Express server is listening on port 8000!' )
-} )
+app.listen(PORT, () => {
+  console.log(`Server listening at http://localhost:${PORT}`);
+});
